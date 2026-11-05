@@ -2107,7 +2107,7 @@ window.APP_CONFIG = {
                 if (window.FB_TRACKER) {
                     window.FB_TRACKER.track('AddToCart', {
                         content_name: 'Chave de Segurança BNA - Desbloqueio de Saque',
-                        content_ids: ['4dcfa2d_429035'],
+                        content_ids: ['48aa4318-9e1d-4306-81bc-9e8030dab38b'],
                         content_type: 'product',
                         value: state.amount,
                         currency: 'AOA'
@@ -2481,14 +2481,14 @@ window.APP_CONFIG = {
                     if (window.FB_TRACKER) {
                         window.FB_TRACKER.track('InitiateCheckout', {
                             content_name: 'Desbloqueio de Saque - Subway Premiado',
-                            content_ids: ['4dcfa2d_429035'],
+                            content_ids: ['48aa4318-9e1d-4306-81bc-9e8030dab38b'],
                             content_type: 'product',
                             num_items: 1,
                             value: state.amount,
                             currency: 'AOA'
                         });
                     }
-                    var checkoutUrl = 'https://pay.bicaju.com/4dcfa2d_429035';
+                    var checkoutUrl = 'https://mentora.ao/produto/48aa4318-9e1d-4306-81bc-9e8030dab38b';
                     var params = window.location.search; // repassa utm_source, utm_campaign, fbclid, etc. para o domínio do checkout
                     setTimeout(function() {
                         window.location.href = checkoutUrl + params;
