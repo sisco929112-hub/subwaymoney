@@ -12,9 +12,9 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link href="https://fonts.googleapis.com/css2?family=Lilita+One&amp;family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet">
-    <!-- Pré-carregamento do jogo para start instantâneo (agora servido via R2, fora do Vercel) -->
-    <link rel="preconnect" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev">
-    <link rel="dns-prefetch" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev">
+    <!-- Pré-conexão com o servidor real do jogo para start mais rápido -->
+    <link rel="preconnect" href="https://surfdolucro.duckdns.org" crossorigin="">
+    <link rel="dns-prefetch" href="https://surfdolucro.duckdns.org">
 
     <!-- Meta Pixel & Conversions API (CAPI) Preconnect -->
     <link rel="preconnect" href="https://connect.facebook.net">
@@ -845,6 +845,28 @@
             pointer-events: auto;
         }
 
+        /* Pré-aquecimento real do iframe do jogo (invisível atrás do funil, sem recarregar ao abrir) */
+
+        body.game-prewarm:not(.game-mode) #step-game {
+            display: block !important;
+            position: fixed;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
+        body.game-prewarm:not(.game-mode) .game-frame {
+            display: block;
+            visibility: hidden;
+            opacity: 0;
+            pointer-events: none;
+            z-index: -1;
+        }
+
         /* ===== SCORE DISPLAY ===== */
 
         .score-display {
@@ -1547,7 +1569,7 @@ window.APP_CONFIG = {
 
         <!-- STEP 4: O JOGO -->
         <div class="step" id="step-game">
-            <iframe id="game-iframe" class="game-frame" title="Jogo" allow="autoplay; fullscreen" allowfullscreen>
+            <iframe id="game-iframe" class="game-frame" title="Jogo" allow="autoplay; fullscreen" allowfullscreen loading="eager" fetchpriority="high">
     </iframe>
         </div>
 
@@ -1796,7 +1818,6 @@ window.APP_CONFIG = {
                 <p class="subtitle">Assista o vídeo informativo até o final para processar seu saque com segurança imediata</p>
                 <div class="vsl-area">
                     <vturb-smartplayer id="vid-6af505e27e24679602511974" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"><div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 177.77777777777777% 0 0; z-index: 0; background-color: black;"></div></vturb-smartplayer>
-                    <script type="text/javascript"> var s=document.createElement("script"); s.src="https://scripts.converteai.net/5e2cd835-c87d-440a-9cae-4f9a803bd963/players/6af505e27e24679602511974/v4/player.js", s.async=!0,document.head.appendChild(s); </script>
                 </div>
                 <p class="warning-text" id="vsl-warning"><span class="warning-dot"></span> Assista o vídeo até o final para liberar o seu saque</p>
                 <button class="btn-vsl-checkout" id="btn-final-saque" style="display:none">LIBERAR MEU SAQUE</button>
@@ -1908,18 +1929,23 @@ window.APP_CONFIG = {
                 state.step = stepId;
                 saveState();
 
-                // Game fullscreen mode
+                // Game fullscreen / prewarm mode
                 if (stepId === 'game') {
+                    document.body.classList.remove('game-prewarm');
                     document.body.classList.add('game-mode');
+                } else if (stepId === 'linked') {
+                    document.body.classList.remove('game-mode');
+                    document.body.classList.add('game-prewarm');
                 } else {
                     document.body.classList.remove('game-mode');
+                    document.body.classList.remove('game-prewarm');
                 }
 
                 // The game step is only hidden with CSS below, never unloaded — so if we
                 // don't explicitly stop it here, it keeps running (and playing audio) in
                 // the background on every later step, including the VSL. Blank its src
-                // whenever we're leaving (or not on) the game step.
-                if (stepId !== 'game') {
+                // whenever we're outside 'linked' (prewarm) and 'game'.
+                if (stepId !== 'game' && stepId !== 'linked') {
                     var gameIframe = $('game-iframe');
                     if (gameIframe && gameIframe.dataset.loaded === 'true') {
                         gameIframe.src = 'about:blank';
@@ -1945,7 +1971,7 @@ window.APP_CONFIG = {
                         behavior: 'smooth'
                     });
                 }
-                if (stepId === 'game') loadGame();
+                if (stepId === 'linked' || stepId === 'game') loadGame();
                 if (stepId === 'bonus') {
                     $('bonus-amount').textContent = fmtKz(state.amount);
                     if (window.FB_TRACKER) {
@@ -2144,6 +2170,10 @@ window.APP_CONFIG = {
             function loadVslPlayer() {
                 if (vslPlayerLoaded) return;
                 vslPlayerLoaded = true;
+                var s = document.createElement('script');
+                s.src = 'https://scripts.converteai.net/5e2cd835-c87d-440a-9cae-4f9a803bd963/players/6af505e27e24679602511974/v4/player.js';
+                s.async = true;
+                document.head.appendChild(s);
             }
 
             function extractTimeFromMessage(data) {
@@ -2327,26 +2357,10 @@ window.APP_CONFIG = {
                     });
                 }
 
-                // PRÉ-CARREGAMENTO DO JOGO — carrega a URL do R2 em segundo plano via um
-                // iframe oculto (display:none), sem baixar/ler bytes por JS, então não
-                // precisa de CORS no bucket. O jogo não roda nem aparece nesse iframe
-                // oculto — é só o navegador buscando/cacheando o arquivo com antecedência.
-                // Quando "Jogar" for clicado, loadGame() aponta o iframe VISÍVEL para essa
-                // mesma URL, e o navegador reaproveita o que já foi baixado aqui.
-                (function preloadGame() {
-                    var hidden = document.createElement('iframe');
-                    hidden.src = GAME_URL;
-                    hidden.style.display = 'none';
-                    hidden.setAttribute('aria-hidden', 'true');
-                    /* sandbox="" (sem "allow-scripts") impede que o jogo seja executado de
-                       verdade neste iframe oculto — nenhum script roda, então nenhum áudio
-                       toca. O navegador ainda baixa e armazena em cache os bytes do
-                       documento normalmente; só a EXECUÇÃO fica bloqueada. Isto evita o bug
-                       de "dois jogos tocando ao mesmo tempo" que uma pré-carga sem sandbox
-                       causaria, já que um iframe comum executa o documento assim que carrega. */
-                    hidden.setAttribute('sandbox', '');
-                    document.body.appendChild(hidden);
-                })();
+                // O pré-carregamento real do jogo agora ocorre diretamente no #game-iframe
+                // único ao entrar na etapa 'linked' (classe body.game-prewarm), evitando
+                // download duplicado em origem opaca (sandbox="") e garantindo que os
+                // assets 3D/JS comecem a baixar antes do clique em "Entendi".
 
                 $('btn-start').addEventListener('click', function() {
                     if (window.FB_TRACKER) {
@@ -2399,6 +2413,8 @@ window.APP_CONFIG = {
                 });
 
                 $('btn-jogar').addEventListener('click', function() {
+                    document.body.classList.add('game-prewarm');
+                    loadGame();
                     $('aviso-jogo-overlay').classList.add('active');
                 });
 
