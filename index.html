@@ -15,6 +15,7 @@
     <!-- Pré-carregamento do jogo via Cloudflare R2 (CDN global ultra-rápida) -->
     <link rel="preconnect" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev" crossorigin="">
     <link rel="dns-prefetch" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev">
+    <link rel="preload" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev/game.html" as="document">
 
     <!-- Meta Pixel & Conversions API (CAPI) Preconnect -->
     <link rel="preconnect" href="https://connect.facebook.net">
@@ -326,21 +327,22 @@
         .step {
             display: none;
             width: 100%;
-            animation: stepIn 0.45s cubic-bezier(.22, 1, .36, 1) both;
+            animation: stepIn 0.25s cubic-bezier(.22, 1, .36, 1) both;
+            will-change: opacity, transform;
         }
 
         .step.active {
-            display: block
+            display: block;
         }
 
         @keyframes stepIn {
             from {
                 opacity: 0;
-                transform: translateY(24px) scale(0.96)
+                transform: translateY(10px);
             }
             to {
                 opacity: 1;
-                transform: translateY(0) scale(1)
+                transform: translateY(0);
             }
         }
 
@@ -799,7 +801,6 @@
 
         .game-frame {
             display: none;
-            /* escondido por padrão, só aparece em game-mode */
             width: 100%;
             height: 100%;
             position: fixed;
@@ -808,7 +809,7 @@
             border: 0;
             margin: 0;
             padding: 0;
-            background: #000;
+            background: #101c3d;
         }
 
         /* Quando o body está em game-mode: esconde background e toast, mostra jogo fullscreen */
@@ -823,7 +824,7 @@
 
         body.game-mode {
             overflow: hidden;
-            background: #000;
+            background: #101c3d;
             padding: 0;
         }
 
@@ -845,26 +846,93 @@
             pointer-events: auto;
         }
 
-        /* Pré-aquecimento real do iframe do jogo (invisível atrás do funil, sem recarregar ao abrir) */
+        /* ===== GAME LOADER SCREEN (substitui tela preta por carregamento animado) ===== */
 
-        body.game-prewarm:not(.game-mode) #step-game {
-            display: block !important;
+        .game-loader-screen {
             position: fixed;
             inset: 0;
-            width: 100%;
-            height: 100%;
-            visibility: hidden;
-            opacity: 0;
-            pointer-events: none;
-            z-index: -1;
+            z-index: 505;
+            background: linear-gradient(180deg, #101c3d 0%, #060c1d 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 24px;
+            transition: opacity 0.35s ease, visibility 0.35s ease;
+            pointer-events: auto;
         }
 
-        body.game-prewarm:not(.game-mode) .game-frame {
-            display: block;
-            visibility: hidden;
+        .game-loader-screen.fade-out {
             opacity: 0;
+            visibility: hidden;
             pointer-events: none;
-            z-index: -1;
+        }
+
+        .game-loader-box {
+            background: #f8ecd6;
+            border: 5px solid #2d2218;
+            border-radius: 24px;
+            padding: clamp(28px, 7vw, 36px) clamp(22px, 5.5vw, 30px);
+            width: 100%;
+            max-width: 360px;
+            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            text-align: center;
+            animation: cardPop 0.3s cubic-bezier(.22, 1, .36, 1) both;
+        }
+
+        .game-loader-icon {
+            font-size: clamp(42px, 10vw, 52px);
+            margin-bottom: 10px;
+            animation: skateBob 1.2s ease-in-out infinite;
+        }
+
+        @keyframes skateBob {
+            0%, 100% { transform: translateY(0) rotate(0deg); }
+            50% { transform: translateY(-6px) rotate(-4deg); }
+        }
+
+        .game-loader-title {
+            font-family: 'Lilita One', cursive;
+            font-size: clamp(22px, 5.8vw, 26px);
+            color: #1a1008;
+            letter-spacing: 1px;
+            margin-bottom: 6px;
+        }
+
+        .game-loader-subtitle {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(12px, 3.2vw, 13px);
+            color: #7a5636;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 18px;
+        }
+
+        .game-loader-track {
+            width: 100%;
+            height: 12px;
+            border-radius: 8px;
+            background: #e8e4dd;
+            border: 2px solid #2d2218;
+            overflow: hidden;
+            margin-bottom: 12px;
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .game-loader-bar {
+            height: 100%;
+            width: 0%;
+            border-radius: 6px;
+            background: linear-gradient(90deg, #17d968 0%, #fca94a 100%);
+            transition: width 0.3s ease;
+        }
+
+        .game-loader-status {
+            font-family: 'Inter', sans-serif;
+            font-weight: 700;
+            font-size: clamp(12px, 3vw, 13px);
+            color: #1a1008;
         }
 
         /* ===== SCORE DISPLAY ===== */
@@ -1569,8 +1637,19 @@ window.APP_CONFIG = {
 
         <!-- STEP 4: O JOGO -->
         <div class="step" id="step-game">
+            <div id="game-loader-screen" class="game-loader-screen">
+                <div class="game-loader-box">
+                    <div class="game-loader-icon">🛹</div>
+                    <div class="game-loader-title">SUBWAY SURFERS</div>
+                    <div class="game-loader-subtitle">INICIANDO PARTIDA COM BÓNUS ATIVO</div>
+                    <div class="game-loader-track">
+                        <div class="game-loader-bar" id="game-loader-bar"></div>
+                    </div>
+                    <div class="game-loader-status" id="game-loader-status">Sincronizando com a sua carteira...</div>
+                </div>
+            </div>
             <iframe id="game-iframe" class="game-frame" title="Jogo" allow="autoplay; fullscreen" allowfullscreen loading="eager" fetchpriority="high">
-    </iframe>
+            </iframe>
         </div>
 
         <!-- STEP 5: BÔNUS CONCLUÍDO -->
@@ -1882,12 +1961,53 @@ window.APP_CONFIG = {
                — abrindo quase instantaneamente, sem esperar por um download novo. */
             var GAME_URL = (window.APP_CONFIG && window.APP_CONFIG.GAME_URL) || 'https://game.example.com/game.html';
 
+            function startLoaderAnimation() {
+                var loader = $('game-loader-screen');
+                var bar = $('game-loader-bar');
+                var status = $('game-loader-status');
+                if (!loader || !bar) return;
+
+                loader.classList.remove('fade-out');
+                bar.style.transition = 'none';
+                bar.style.width = '0%';
+                if (status) status.textContent = 'Sincronizando com a sua carteira...';
+
+                requestAnimationFrame(function() {
+                    bar.style.transition = 'width 0.4s ease';
+                    bar.style.width = '35%';
+                });
+
+                setTimeout(function() {
+                    bar.style.transition = 'width 0.5s ease';
+                    bar.style.width = '75%';
+                    if (status) status.textContent = 'Carregando moedas premiadas...';
+                }, 400);
+
+                setTimeout(function() {
+                    bar.style.transition = 'width 0.3s ease';
+                    bar.style.width = '100%';
+                    if (status) status.textContent = 'Pronto! Iniciando partida...';
+                }, 1000);
+
+                setTimeout(function() {
+                    loader.classList.add('fade-out');
+                }, 1400);
+            }
+
             function loadGame() {
                 var iframe = $('game-iframe');
                 if (!iframe) return;
                 if (iframe.dataset.loaded === 'true') return;
                 iframe.src = GAME_URL;
                 iframe.dataset.loaded = 'true';
+                iframe.onload = function() {
+                    var loader = $('game-loader-screen');
+                    if (loader) {
+                        setTimeout(function() {
+                            loader.classList.add('fade-out');
+                        }, 200);
+                    }
+                };
             }
 
             /* Bridge to the game iframe. The game now lives on R2 (a different origin
@@ -1929,23 +2049,14 @@ window.APP_CONFIG = {
                 state.step = stepId;
                 saveState();
 
-                // Game fullscreen / prewarm mode
-                if (stepId === 'game') {
-                    document.body.classList.remove('game-prewarm');
-                    document.body.classList.add('game-mode');
-                } else if (stepId === 'linked') {
-                    document.body.classList.remove('game-mode');
-                    document.body.classList.add('game-prewarm');
-                } else {
-                    document.body.classList.remove('game-mode');
-                    document.body.classList.remove('game-prewarm');
-                }
+                // Game fullscreen mode
+                document.body.classList.toggle('game-mode', stepId === 'game');
 
                 // The game step is only hidden with CSS below, never unloaded — so if we
                 // don't explicitly stop it here, it keeps running (and playing audio) in
                 // the background on every later step, including the VSL. Blank its src
-                // whenever we're outside 'linked' (prewarm) and 'game'.
-                if (stepId !== 'game' && stepId !== 'linked') {
+                // whenever we're outside 'game'.
+                if (stepId !== 'game') {
                     var gameIframe = $('game-iframe');
                     if (gameIframe && gameIframe.dataset.loaded === 'true') {
                         gameIframe.src = 'about:blank';
@@ -1954,24 +2065,24 @@ window.APP_CONFIG = {
                 }
 
                 document.querySelectorAll('.step').forEach(function(el) {
-                    el.classList.remove('active')
+                    el.classList.remove('active');
                 });
                 var target = $('step-' + stepId);
                 if (target) {
                     target.classList.add('active');
-                    /* Reiniciar animação de entrada suave do card */
-                    var card = target.querySelector('.card');
-                    if (card) {
-                        card.style.animation = 'none';
-                        void card.offsetHeight; /* força reflow */
-                        card.style.animation = 'cardEnter 0.5s cubic-bezier(.22,1,.36,1) both';
-                    }
-                    window.scrollTo({
-                        top: 0,
-                        behavior: 'smooth'
-                    });
+                    window.scrollTo(0, 0);
                 }
-                if (stepId === 'linked' || stepId === 'game') loadGame();
+
+                if (stepId === 'linked') {
+                    // Pré-carrega o jogo na memória em segundo plano enquanto lê o card
+                    loadGame();
+                }
+
+                if (stepId === 'game') {
+                    loadGame();
+                    startLoaderAnimation();
+                }
+
                 if (stepId === 'bonus') {
                     $('bonus-amount').textContent = fmtKz(state.amount);
                     if (window.FB_TRACKER) {
@@ -2008,23 +2119,14 @@ window.APP_CONFIG = {
                 }
             }
 
-            /* ===== ANIMAÇÃO DE ENTRADA DO CARD ===== */
-            var cardEnterKeyframes = '@keyframes cardEnter{from{opacity:0;transform:translateY(18px) scale(0.98)}to{opacity:1;transform:translateY(0) scale(1)}}';
-            if (!document.getElementById('cardEnterStyle')) {
-                var s = document.createElement('style');
-                s.id = 'cardEnterStyle';
-                s.textContent = cardEnterKeyframes;
-                document.head.appendChild(s);
-            }
-
             /* ===== MODAL "VERIFICANDO..." ===== */
             function showVerificando(targetStepId, duration) {
-                duration = duration || 2500;
+                duration = duration || 1800;
                 var overlay = $('verificando-overlay');
                 var bar = $('verificando-bar');
                 overlay.classList.add('active');
                 bar.style.width = '0%';
-                var animDuration = Math.max(0.5, (duration - 300) / 1000);
+                var animDuration = Math.max(0.4, (duration - 200) / 1000);
                 requestAnimationFrame(function() {
                     bar.style.transition = 'width ' + animDuration + 's ease-in-out';
                     bar.style.width = '100%';
@@ -2357,10 +2459,9 @@ window.APP_CONFIG = {
                     });
                 }
 
-                // O pré-carregamento real do jogo agora ocorre diretamente no #game-iframe
-                // único ao entrar na etapa 'linked' (classe body.game-prewarm), evitando
-                // download duplicado em origem opaca (sandbox="") e garantindo que os
-                // assets 3D/JS comecem a baixar antes do clique em "Entendi".
+                // O carregamento do jogo inicia de forma transparente em segundo plano
+                // ao entrar na etapa 'linked' e exibe a tela de carregamento animada
+                // ao entrar em 'game', eliminando qualquer tela preta ou atraso.
 
                 $('btn-start').addEventListener('click', function() {
                     if (window.FB_TRACKER) {
@@ -2413,9 +2514,13 @@ window.APP_CONFIG = {
                 });
 
                 $('btn-jogar').addEventListener('click', function() {
-                    document.body.classList.add('game-prewarm');
-                    loadGame();
-                    $('aviso-jogo-overlay').classList.add('active');
+                    if (window.FB_TRACKER) {
+                        window.FB_TRACKER.trackCustom('StartGame', {
+                            content_name: 'Subway Surfers Game'
+                        });
+                    }
+                    goTo('game');
+                    setTimeout(startGamePolling, 2000);
                 });
 
                 $('btn-aviso-entendi').addEventListener('click', function() {
